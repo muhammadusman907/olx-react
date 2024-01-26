@@ -13,7 +13,7 @@ import SELL_BTN from "../Images/SEll_BTN.svg"
 import { About } from "../About.jsx";
 
 export const MyNavbar = () => {
-  console.log(Link);
+  // console.log(Link);
   return (
     <>
       <div className="bg-gray-500 w-[100%] ">
@@ -23,6 +23,9 @@ export const MyNavbar = () => {
           </Link>
           <Link to="login">
            {<li className="text-white">Login</li>}
+          </Link>
+          <Link to="login">
+           {<li className="text-white">Dashbord</li>}
           </Link>
           <li>
             <button className="relative flex justify-center items-center

@@ -1,35 +1,25 @@
-// import { Button } from "../component/Button.jsx"
-// import { Input } from "../component/Input.jsx"
-// export const Login = () => {
-//     return (
-
-//         <> 
-//         <div className="container bg-slate-600 h-[500px]
-//         flex justify-center 
-//         ">
-//           <div className="w-[350px] flex flex-col gap-3 pt-10">
-//           <Input className="form-control h-12 " placeholder="Email"/>
-//           <Input className ="form-control h-12 border-black border-2" placeholder="Password"/>
-
-//           <Button>Login</Button>
-//           <Button>Login with google</Button>
-//           </div>
-//         </div>
-         
-//          </>
-
-
-
-//     )
-// }
-
-
 import React from 'react';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
-import { Button, Checkbox, Form, Input } from 'antd';
+import { Button,Form, Input } from 'antd';
+import { Link } from 'react-router-dom';
+import { auth , signInWithEmailAndPassword} from '../config/firbase';
 export const Login  = () => {
   const onFinish = (values) => {
-    console.log('Received values of form: ', values);
+      const { email , password } = values ;
+      console.log(email)
+      signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          // Signed in  
+          const user = userCredential.user;
+           console.log(user);
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+        });
+    console.log('Received values of form:', values);
+     
+
   };
   return (
     <> <div className='flex items-center justify-center w-full h-screen '>
@@ -42,7 +32,7 @@ export const Login  = () => {
       onFinish={onFinish}
     >
       <Form.Item
-        name="username"
+        name="email"
         rules={[
           {
             required: true,
@@ -74,7 +64,7 @@ export const Login  = () => {
           Log in
         </Button>
         <div className="pt-3">
-        Or <a href="" >register now!</a>
+        Or <Link to="/signup">register now!</Link> 
         </div>
       </Form.Item>
     </Form>
@@ -83,4 +73,3 @@ export const Login  = () => {
     
   );
 };
-// export default App;
