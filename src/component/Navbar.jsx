@@ -9,7 +9,7 @@ import PROFILE from "../Images/PROFILE.png";
 import { DownOutlined } from "@ant-design/icons";
 import { Dropdown, message, Space } from "antd";
 // import { About } from "../About.jsx";
-import { auth, onAuthStateChanged } from "../config/firbase.js";
+import { auth, onAuthStateChanged, signOut } from "../config/firbase.js";
 import { Routes, Route, Navigate } from "react-router-dom";
 import LOGO from "../Images/logo.png";
 import { Profile } from "../profile/Profile.jsx";
@@ -18,6 +18,16 @@ import { Profile } from "../profile/Profile.jsx";
 
 export const MyNavbar = () => {
   const [page, setPage] = useState("");
+// =====================
+// ==============logout 
+  const logOut = () =>{
+    // const auth = getAuth();
+    signOut(auth).then(() => {
+               alert("logout")
+    }).catch((error) => {
+         
+    });
+  }
   const onClick = ({ key }) => {
     // message.info(`Click on item ${key}`);
     switch (key) {
@@ -28,7 +38,8 @@ export const MyNavbar = () => {
         setPage("dashboard");
         break;
       case "3":
-        setPage("logout");
+          logOut()
+        // setPage("logout");
         break;
       default:
     }
@@ -76,23 +87,25 @@ export const MyNavbar = () => {
           </Link>
 
           <li className="flex items-center">
-            <div className="flex items-center">
-              <div className="text-white rounded-full border-2 w-[40px] h-[40px]">
-                <img src={PROFILE} alt=""  />
+            {islogin &&
+              <div className="flex items-center">
+                <div className="text-white rounded-full border-2 w-[40px] h-[40px]">
+                  <img src={PROFILE} alt="" />
+                </div>
+                <Dropdown
+                  menu={{
+                    items,
+                    onClick,
+                  }}
+                >
+                  <a onClick={(e) => e.preventDefault()}>
+                    <Space>
+                      <DownOutlined className="text-white" />
+                    </Space>
+                  </a>
+                </Dropdown>
               </div>
-              <Dropdown
-                menu={{
-                  items,
-                  onClick,
-                }}
-              >
-                <a onClick={(e) => e.preventDefault()}>
-                  <Space>
-                    <DownOutlined className="text-white" />
-                  </Space>
-                </a>
-              </Dropdown>
-            </div>
+            }
             <Link to="/dashboard">
               <div>
                 {islogin ? (
@@ -130,39 +143,3 @@ export const MyNavbar = () => {
     </>
   );
 };
-
-// import { DownOutlined } from "@ant-design/icons";
-// import { Dropdown, message, Space } from "antd";
-// const onClick = ({ key }) => {
-//   message.info(`Click on item ${key}`);
-// };
-// const items = [
-//   {
-//     label: "1st menu item",
-//     key: "1",
-//   },
-//   {
-//     label: "2nd menu item",
-//     key: "2",
-//   },
-//   {
-//     label: "3rd menu item",
-//     key: "3",
-//   },
-// ];
-// const App = () => (
-//   <Dropdown
-//     menu={{
-//       items,
-//       onClick,
-//     }}
-//   >
-//     <a onClick={(e) => e.preventDefault()}>
-//       <Space>
-//         Hover me, Click menu item
-//         <DownOutlined />
-//       </Space>
-//     </a>
-//   </Dropdown>
-// );
-// export default App;

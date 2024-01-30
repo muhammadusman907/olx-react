@@ -21,7 +21,9 @@
     background-color: rgba(0, 0, 0, 0.08);
     /* opacity: 0; */
 }
-
+:where(.css-dev-only-do-not-override-1qhpsh8).ant-modal .ant-modal-content{
+    padding : 0 ;
+}
 
 
 

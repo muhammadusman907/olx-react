@@ -43,13 +43,13 @@ function MyCard() {
   };
   const singleProduct = async (singleItemId) => {
     console.log(singleItemId);
-    
+
     const docRef = doc(db, "products", singleItemId);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
       setSingleProductItem(docSnap.data());
       console.log("Document data:", docSnap.data());
-      setSingleProductItem(docSnap.data())
+      setSingleProductItem(docSnap.data());
       showModal();
     } else {
       // docSnap.data() will be undefined in this case
@@ -95,30 +95,22 @@ function MyCard() {
                   Open Modal with customized footer
                 </Button> */}
                 <Modal
-                className="p-0"
+                  className="p-0"
                   open={open}
-                  title="Title"
                   onOk={handleOk}
                   onCancel={handleCancel}
                   footer={[
                     <Button
                       key="back"
                       type="primary"
-                      className="bg-blue-500"
+                      className="bg-blue-500 "
                       onClick={handleCancel}
                     >
                       chat
                     </Button>,
-                    // <Button
-                    //   key="submit"
-                    //   type="primary"
-                    //   loading={loading}
-                    //   onClick={handleOk}
-                    // >
-                    //   Submit
-                    // </Button>,
+
                     <Button
-                      className="bg-blue-500"
+                      className="bg-blue-500 mb-3 me-2"
                       type="primary"
                       loading={loading}
                       onClick={handleOk}
@@ -128,30 +120,32 @@ function MyCard() {
                   ]}
                 >
                   <Card
-                    hoverable
+                    className="space-around"
                     style={{
-                      display:"flex",
                       width: "100%",
-                      height: "300px"
+                      height: "300px",
                     }}
                     cover={
                       <img
-                    
                         alt="example"
                         src={singleProductIem.ProductImage}
-                        
-                      className="width-[50%] h-32 cover"
-
+                        className="h-[100px] w-[200px] object-cover"
+                        style={{
+                          height: "200px",
+                        }}
                       />
                     }
                   >
+                    <div className="font-bold">
+                      RS : {singleProductIem.price}
+                    </div>
                     <Meta
-                     style={{
-                      width: "50%",
-                    }}
-                  
+                      style={{}}
                       title={singleProductIem.productName}
-                      description={singleProductIem.description}
+                      description={
+                        singleProductIem.description &&
+                        ` ${singleProductIem.description.slice(0, 60)}...`
+                      }
                     />
                   </Card>
                 </Modal>
@@ -162,23 +156,27 @@ function MyCard() {
                   className="border-2 mt-2"
                   hoverable
                   style={{
-                    width: 240,
+                    width: "300px",
+                    height: "314px",
                   }}
                   cover={
                     <img
                       alt="example"
                       src={value.ProductImage}
-                      className="width-[100%] h-32 object-cover"
+                      className="width-[100%] h-[134px] object-cover border-b-2"
                     />
                   }
                 >
                   <div>
-                    <b>Rs : {value.price}</b>
+                    <b
+                      className="font-bold text-[18px]"
+                    >
+                      Rs {Intl.NumberFormat().format(+value.price)}
+                    </b>
                   </div>
-                  <Meta
-                    title={value.productName}
-                    description={`${value.description.slice(0, 50)}...`}
-                  />
+                  <Meta className="h-[50px] text-black text-[17px] flex items-center lea" 
+                  description={`${value.description.slice(0, 50)}...`} />
+                  <Meta title={value.productName} />
                 </Card>
               </>
             ))
