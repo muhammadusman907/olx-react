@@ -86,9 +86,9 @@ export const MyNavbar = () => {
             }
           </Link>
 
-          <li className="flex items-center">
-            {islogin &&
-              <div className="flex items-center">
+          <li className="flex items-center border-2 justify-around text-black w-[200px]">
+            {islogin && (
+              <div className="flex items-center border-2 ">
                 <div className="text-white rounded-full border-2 w-[40px] h-[40px]">
                   <img src={PROFILE} alt="" />
                 </div>
@@ -105,7 +105,7 @@ export const MyNavbar = () => {
                   </a>
                 </Dropdown>
               </div>
-            }
+            )}
             <Link to="/dashboard">
               <div>
                 {islogin ? (
