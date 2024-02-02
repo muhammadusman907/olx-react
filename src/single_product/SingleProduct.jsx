@@ -44,7 +44,7 @@ export const SingleProduct = () => {
   return (
     <>
       {chatPageOpen ? 
-        <Navigate to={`chat?chat=${searchParams.get("id")}`} />
+        <Navigate to={`chat?chat=${userinfo.userId}`} />
       :
       <Row className="ms-10 mt-12 me-10">
         <Col span={16}>
