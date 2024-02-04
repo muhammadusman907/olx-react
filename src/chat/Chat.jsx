@@ -1,7 +1,7 @@
 import { Row, Col, Card, Input, Button } from "antd";
 import LOGO from "../Images/PROFILE.png";
 import { IoMdSend } from "react-icons/io";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   auth,
   collection,
@@ -16,6 +16,8 @@ import {
   doc,
   getDoc,
   orderBy,
+  ref,
+  set,
 } from "../config/firbase";
 import { useSearchParams } from "react-router-dom";
 import { useEffect } from "react";
@@ -24,23 +26,43 @@ export const Chat = () => {
   const [searchParams] = useSearchParams();
   const [chatUserList, setChatUserList] = useState([]);
   const [getMessage, setGetMessage] = useState([]);
+  const [selectChat, setSelectChat] = useState(true);
   const [singleUserData, setSingleUserData] = useState({});
+  const [selectId, setSelectId] = useState("");
+  const [size , setSize] = useState(true)
+  const topToBottom = useRef(null);
+
+  console.log({ topToBottom });
+  topToBottom.scrollTop = topToBottom.scrollHeight - topToBottom.clientHeight;
+
+  //  window.addEventListener( "resize",()=>{
+  //        if(window.innerWidth <= "600"){
+  //           setSize(false)      
+  //        }
+  //        else{
+  //         setSize(true)
+  //        }
+         
+  //    console.log("window size----------->", window.innerWidth );
+  //  })
   // ==============================
   // =================== chat value
 
   let messageId = "";
+  let submit = false;
   const submitChat = async () => {
-    console.log(chatValue);
-
+    setGetMessage([]);
+    console.log("CHAT VALUE", chatValue);
     const currentUserId = auth.currentUser.uid;
-    const sendUserId = searchParams.get("chat");
+    const sendUserId = localStorage.getItem("selectUserId");
+    console.log(sendUserId);
     if (currentUserId > sendUserId) {
       messageId = currentUserId + sendUserId;
     } else {
       messageId = sendUserId + currentUserId;
     }
     console.log(messageId);
-  
+
     // ==================================================
     // =============== message add fire store ===========
     // ==================================================
@@ -48,11 +70,15 @@ export const Chat = () => {
     const docRef = await addDoc(collection(db, "messages"), {
       chatValue,
       messageId,
-      messageSender: sendUserId,
+      messageSender: currentUserId,
       watch: false,
       timestamp: serverTimestamp(),
     });
     console.log("Document written with ID: ", docRef.id);
+    submit = true;
+
+    getChat(messageId);
+    setGetMessage([]);
     setChatValue("");
   };
   // ====================================================
@@ -63,55 +89,42 @@ export const Chat = () => {
   //=============== select user===============
   // =========================================
   let getMessageUserId = "";
-  const getUserMessage = [];
-  const selectUser = (selectuserId) => {
-    console.log(selectuserId);
+  const setUserMessage = [];
+  // let localStorageGetId = "";
+  const selectUser = async (selectuserId) => {
+    localStorage.setItem("selectUserId", selectuserId);
+    console.log("select id ", selectId);
+    console.log("check id ", selectuserId);
 
-    const currentUserId = auth.currentUser.uid;
-    if (selectuserId > currentUserId) {
-      getMessageUserId = selectuserId + currentUserId;
-    } else {
-      getMessageUserId = currentUserId + selectuserId;
+    if (selectChat) {
+      console.log("ha mai hoon");
+      const currentUserId = auth.currentUser.uid;
+      if (selectuserId > currentUserId) {
+        getMessageUserId = selectuserId + currentUserId;
+      } else {
+        getMessageUserId = currentUserId + selectuserId;
+      }
+      setGetMessage("");
+      getChat(getMessageUserId);
     }
-
-    const q = query(
-      collection(db, "messages"),
-      where("messageId", "==", getMessageUserId),
-      orderBy("timestamp")
-     
-    );
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      snapshot.docChanges().forEach((change) => {
-        if (change.type === "added") {
-          console.log("New city: ", change.doc.data());
-          let getData = change.doc.data();
-          let setId = getData;
-          setId.senderId = selectuserId;
-          console.log(setId);
-          getUserMessage.push(setId);
-          setGetMessage(getUserMessage);
-        }
-      });
-    });
-    setGetMessage([]);
-    console.log(getMessageUserId);
   };
+
   // =============================
   // ============= get single user
   // =============================
-  const getSingleUser = async() =>{
-  const currentUserId = await authanticateUser();
-const docRef = doc(db, "users",currentUserId );
-const docSnap = await getDoc(docRef);
+  const getSingleUser = async () => {
+    const currentUserId = await authanticateUser();
+    const docRef = doc(db, "users", currentUserId);
+    const docSnap = await getDoc(docRef);
 
-if (docSnap.exists()) {
-  console.log("Document data:", docSnap.data());
-  setSingleUserData(docSnap.data());
-} else {
-  // docSnap.data() will be undefined in this case
-  console.log("No such document!");
-}
-  }
+    if (docSnap.exists()) {
+      console.log("Document data:", docSnap.data());
+      setSingleUserData(docSnap.data());
+    } else {
+      // docSnap.data() will be undefined in this case
+      console.log("No such document!");
+    }
+  };
   // ==================================================
   // ======================get users===================
   // ==================================================
@@ -140,30 +153,57 @@ if (docSnap.exists()) {
       setChatUserList(usersList);
     });
   };
-  useEffect(()=>{
-        setGetMessage([...getMessage])
-  },[getMessage])
+  //  =============================== get chat
+  // ========================================
+  const getChat = (getMessageUserId) => {
+    // setGetMessage("")
+    const q = query(
+      collection(db, "messages"),
+      where("messageId", "==", getMessageUserId),
+      orderBy("timestamp")
+    );
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === "added") {
+          console.log("New city:", change);
+          setUserMessage.push(change.doc.data());
+          setGetMessage((...prev) => [...prev, ...setUserMessage]);
+        }
+      });
+    });
+  };
+
   useEffect(() => {
     getUsers();
-    getSingleUser()
+    getSingleUser();
   }, []);
+  useEffect(() => {
+    if (topToBottom.current) {
+      topToBottom.current.scrollTop =
+        topToBottom.current.scrollHeight - topToBottom.current.clientHeight;
+    }
+  }, [selectUser]);
+
+  console.log({ getMessage });
   return (
     <>
-      <Row className="ms-2 mt-2 me-2">
-        <Col span={12} className="border-2">
+      <Row className="ms-2 mt-2 me-2 ">
+        <Col span={12} className="border-2 ">
           <Card>
             <Row align="middle" className="shadow-sm h-20">
-              <Col span={3}>
+              <Col className="w-[70px]">
                 <div className="w-[60px] h-[60px] rounded-full border-2">
                   <img src={LOGO} alt="" />
                 </div>
               </Col>
-              <Col span={16}>
-                <span className=" font-bold cursor-pointer">{singleUserData.email}</span>
+              <Col className="w-[30%]">
+                <span className=" font-bold cursor-pointer">
+                  {singleUserData.email}
+                </span>
               </Col>
             </Row>
           </Card>
-          <Card className="h-[550px]">
+          <Card className="h-[400px] overflow-y-scroll ">
             {chatUserList.map((value, index) => (
               <Row
                 align="middle"
@@ -171,13 +211,13 @@ if (docSnap.exists()) {
                 key={value.userId}
                 onClick={() => selectUser(value.userId)}
               >
-                <Col span={3}>
+                <Col className="w-[70px]">
                   <div className="w-[60px] h-[60px] rounded-full border-2">
                     <img src={LOGO} alt="" />
                   </div>
                 </Col>
-                <Col span={16}>
-                  <span className=" font-bold cursor-pointer">
+                <Col className="w-[30%]">
+                  <span className="font-bold cursor-pointer">
                     {value.email}
                   </span>
                 </Col>
@@ -186,32 +226,39 @@ if (docSnap.exists()) {
           </Card>
         </Col>
         {/*==================== second card ==================*/}
-
-        <Col span={12} className="border-2 relative ">
-          <div className="h-[515px] overflow-scroll">
-            <Row>
-              {getMessage.map((value, index) => (
+      {console.log(size)}
+       {
+       size && (<Col span={12} className="border-2 relative ">
+          <div className="h-[515px] overflow-y-scroll mb-2 " ref={topToBottom}>
+            <Row className="p-2">
+              {getMessage.length > 0 ? (
                 <>
-                  {value.senderId !== value.messageSender && (
-                    <Col span={24} className="h-fit " key={index}>
-                      <div className="ms-2 mt-2 w-[50%]">
-                        <span className="px-4 py-2 rounded-lg inline-block rounded-br-none bg-blue-600 text-white ">
-                          {value.chatValue}
-                        </span>
-                      </div>
-                    </Col>
-                  )}
-                  {value.senderId === value.messageSender && (
-                    <Col span={24} className="flex justify-end h-fit">
-                      <div className="ms-2 mt-2 w-[50%] flex justify-end">
-                        <span className="px-4 py-2 rounded-lg inline-block rounded-br-none bg-gray-600 text-white ">
-                          {value.chatValue}
-                        </span>
-                      </div>
-                    </Col>
-                  )}
+                  {getMessage.map((value, index) => (
+                    <>
+                      {auth.currentUser.uid !== value.messageSender && (
+                        <Col span={24} className="h-fit " key={index}>
+                          <div className="ms-2 mt-2 w-[50%]">
+                            <span className="px-4 py-2 rounded-lg inline-block rounded-br-none bg-blue-600 text-white ">
+                              {value.chatValue}
+                            </span>
+                          </div>
+                        </Col>
+                      )}
+                      {auth.currentUser.uid === value.messageSender && (
+                        <Col span={24} className="flex justify-end h-fit">
+                          <div className="ms-2 mt-2 w-[50%] flex justify-end">
+                            <span className="px-4 py-2 rounded-lg inline-block rounded-br-none bg-gray-600 text-white ">
+                              {value.chatValue}
+                            </span>
+                          </div>
+                        </Col>
+                      )}
+                    </>
+                  ))}
                 </>
-              ))}
+              ) : (
+                <Col>not found</Col>
+              )}
             </Row>
           </div>
           <Row align="bottom" className="">
@@ -220,12 +267,12 @@ if (docSnap.exists()) {
                 value={chatValue}
                 onChange={(e) => setChatValue(e.target.value)}
               />
-              <Button className="w-[70px] ms-2" onClick={submitChat}>
+              <Button className="w-[70px] ms-2" onClick={() => submitChat()}>
                 <IoMdSend className="m-auto" />
               </Button>
             </Col>
           </Row>
-        </Col>
+        </Col>)}
       </Row>
     </>
   );
